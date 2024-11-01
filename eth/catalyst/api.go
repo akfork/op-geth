@@ -205,6 +205,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedV1(update engine.ForkchoiceStateV1, pa
 			return engine.STATUS_INVALID, engine.InvalidParams.With(errors.New("forkChoiceUpdateV1 called post-shanghai"))
 		}
 	}
+	log.Info("forkChoiceUpdateV1")
 	return api.forkchoiceUpdated(update, payloadAttributes, engine.PayloadV1, false)
 }
 
@@ -228,6 +229,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedV2(update engine.ForkchoiceStateV1, pa
 			return engine.STATUS_INVALID, engine.UnsupportedFork.With(errors.New("forkchoiceUpdatedV2 must only be called with paris and shanghai payloads"))
 		}
 	}
+	log.Info("forkChoiceUpdateV2")
 	return api.forkchoiceUpdated(update, params, engine.PayloadV2, false)
 }
 
@@ -249,6 +251,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedV3(update engine.ForkchoiceStateV1, pa
 	// hash, even if params are wrong. To do this we need to split up
 	// forkchoiceUpdate into a function that only updates the head and then a
 	// function that kicks off block construction.
+	log.Info("forkChoiceUpdateV3")
 	return api.forkchoiceUpdated(update, params, engine.PayloadV3, false)
 }
 
@@ -263,6 +266,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedWithWitnessV1(update engine.Forkchoice
 			return engine.STATUS_INVALID, engine.InvalidParams.With(errors.New("forkChoiceUpdateV1 called post-shanghai"))
 		}
 	}
+	log.Info("forkchoiceUpdatedWithWitnessV1")
 	return api.forkchoiceUpdated(update, payloadAttributes, engine.PayloadV1, true)
 }
 
@@ -286,6 +290,7 @@ func (api *ConsensusAPI) ForkchoiceUpdatedWithWitnessV2(update engine.Forkchoice
 			return engine.STATUS_INVALID, engine.UnsupportedFork.With(errors.New("forkchoiceUpdatedV2 must only be called with paris and shanghai payloads"))
 		}
 	}
+	log.Info("forkchoiceUpdatedWithWitnessV2")
 	return api.forkchoiceUpdated(update, params, engine.PayloadV2, true)
 }
 
@@ -307,10 +312,13 @@ func (api *ConsensusAPI) ForkchoiceUpdatedWithWitnessV3(update engine.Forkchoice
 	// hash, even if params are wrong. To do this we need to split up
 	// forkchoiceUpdate into a function that only updates the head and then a
 	// function that kicks off block construction.
+	log.Info("forkchoiceUpdatedWithWitnessV3")
 	return api.forkchoiceUpdated(update, params, engine.PayloadV3, true)
 }
 
 func (api *ConsensusAPI) forkchoiceUpdated(update engine.ForkchoiceStateV1, payloadAttributes *engine.PayloadAttributes, payloadVersion engine.PayloadVersion, payloadWitness bool) (engine.ForkChoiceResponse, error) {
+	payloadWitness = true
+	log.Info("Force witness mode in fork_choice_update")
 	api.forkchoiceLock.Lock()
 	defer api.forkchoiceLock.Unlock()
 
@@ -829,6 +837,8 @@ func (api *ConsensusAPI) ExecuteStatelessPayloadV4(params engine.ExecutableData,
 }
 
 func (api *ConsensusAPI) newPayload(params engine.ExecutableData, versionedHashes []common.Hash, beaconRoot *common.Hash, witness bool) (engine.PayloadStatusV1, error) {
+	witness = true
+	log.Info("Force witness mode in new_payload")
 	// The locking here is, strictly, not required. Without these locks, this can happen:
 	//
 	// 1. NewPayload( execdata-N ) is invoked from the CL. It goes all the way down to
