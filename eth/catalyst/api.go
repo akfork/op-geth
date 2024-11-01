@@ -19,6 +19,7 @@ package catalyst
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -944,6 +945,8 @@ func (api *ConsensusAPI) newPayload(params engine.ExecutableData, versionedHashe
 	}
 	log.Trace("Inserting block without sethead", "hash", block.Hash(), "number", block.Number())
 	proofs, err := api.eth.BlockChain().InsertBlockWithoutSetHead(block, witness)
+	proofStr, _ := json.Marshal(proofs)
+	log.Info("block", block.Number(), "witness", proofStr)
 	if err != nil {
 		log.Warn("NewPayload: inserting block failed", "error", err)
 
@@ -961,6 +964,7 @@ func (api *ConsensusAPI) newPayload(params engine.ExecutableData, versionedHashe
 	if proofs != nil {
 		ow = new(hexutil.Bytes)
 		*ow, _ = rlp.EncodeToBytes(proofs)
+		log.Info("witness data", ow.String())
 	}
 	return engine.PayloadStatusV1{Status: engine.VALID, Witness: ow, LatestValidHash: &hash}, nil
 }
